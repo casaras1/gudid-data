@@ -40,6 +40,8 @@ public class GudidTransformationMojo extends AbstractMojo {
     private String controllerName;
     @Parameter(property = "skipUnzip", defaultValue = "false")
     private boolean skipUnzip;
+    @Parameter(property = "medicalSpecialties")
+    private String[] medicalSpecialties;
 
     private UUID namespace;
 
@@ -48,7 +50,8 @@ public class GudidTransformationMojo extends AbstractMojo {
             "foi/foiclass.txt",
             "gudid/productCodes.txt",
             "gudid/identifiers.txt",
-            "gudid/device.txt"
+            "gudid/device.txt",
+            "gudid/premarketSubmissions.txt"
     );
 
     public void execute() throws MojoExecutionException {
@@ -117,7 +120,7 @@ public class GudidTransformationMojo extends AbstractMojo {
 
         EntityService.get().beginLoadPhase();
         try {
-            GudidUtility gudidUtility = new GudidUtility(namespace);
+            GudidUtility gudidUtility = new GudidUtility(namespace, ".", medicalSpecialties);
             Composer composer = new Composer("GUDID Transformer Composer");
             processFilesInOrder(inputDirectory, composer, gudidUtility);
             composer.commitAllSessions();
@@ -182,6 +185,8 @@ public class GudidTransformationMojo extends AbstractMojo {
             return new GudidIdentifierTransformer(gudidUtility);
         } else if (lowerFileName.contains("productcodes.txt")) {
             return new ProductCodeTransformer(gudidUtility);
+        } else if (lowerFileName.contains("premarketsubmissions.txt")) {
+            return new PremarketSubmissionTransformer(gudidUtility);
         }
 
         return null;
